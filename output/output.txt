@@ -1,0 +1,14 @@
+4096	 #Cache size
+64  	 #Cache line size
+Direct-mapped cache
+LRU Replacement
+25	 #Cache accesses
+12	 #Read accesses
+13	 #Write accesses
+25	 #Cache misses
+25	 #Compulsory misses
+0	 #Capacity misses
+0	 #Conflict misses
+12	 #Read misses
+13	 #Write misses
+2 	 #Dirty blocks evicted
