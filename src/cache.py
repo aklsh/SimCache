@@ -49,12 +49,15 @@ class cacheSet:
                     self.PLRUTree.traverse(idx)
                 elif self.replacementPolicy == "LRU":
                     self.LRUCounter = LRUupdate(self.LRUCounter, idx)
-                return True
+                return True, None
         # if comes here, then block with given tag not in cache
         # bring to cache, and return miss (False)
         newBlock = cacheBlock(blockTag)
-        self.insert(newBlock)
-        return False
+        status, replaceBlock = self.insert(newBlock)
+        if status == 0:
+            return False, None
+        else:
+            return False, replaceBlock
 
     def replace(self):
         if self.replacementPolicy == "RANDOM":
@@ -81,10 +84,22 @@ class cacheSet:
         if index == -1: # no empty block - replace
             replacementCandidate = self.replace()
             replacedBlock = copy(self.blocks[replacementCandidate])
-            self.blocks[replacementCandidate].valid = False
+            self.blocks[replacementCandidate].valid = True
             self.blocks[replacementCandidate].dirty = False
-            self.blocks[replacementCandidate].tag = None
-            return replacedBlock
+            self.blocks[replacementCandidate].tag = newBlock.tag
+            return 1, replacedBlock
+        return 0, None
 
 class cache:
-    def __init__(self, numSets=-1, assoc, replacementPolicy):
+    def __init__(self, numSets, assoc, replacementPolicy):
+        self.numSets = numSets
+        self.assoc = assoc
+        self.replacementPolicy = replacementPolicy
+        self.cacheSets = []
+        for _ in range(self.numSets):
+            self.cacheSets.extend([cacheSet(self.assoc, self.replacementPolicy)])
+
+    def memRequest(self, blockAddress, accessType):
+        setIndex = blockAddress % self.numSets
+        blockTag = blockAddress//self.numSets
+        self.cacheSets[setIndex].accessBlock(blockTag, accessType)
