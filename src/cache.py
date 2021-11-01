@@ -1,61 +1,66 @@
 import random
 from replacePLRU import Tree
-import numpy as np
+from replaceLRU import LRUreplace, LRUupdate
+import math
 from copy import copy
 
 class cacheBlock:
     def __init__(self, tag=None):
         self.tag = tag
-        self.valid = False
+        if tag == None:
+            self.valid = False
+        else:
+            self.valid = True
         self.dirty = False
-        self.LRUCounter = 0
 
     def print(self):
         print("Valid: {}    Dirty: {}    Tag: {}".format(self.valid, self.dirty, self.tag))
 
     def access(self, accessType:str):
-        try:
-            if self.valid is True:
-                if accessType == 'r':
-                    pass
-                if accessType == 'w':
-                    self.dirty = True
-            else:
-                raise ValueError("Accessing Invalid Cache Block")
-        except ValueError as e:
-            print(repr(e))
-            self.print()
+        if self.valid is True:
+            if accessType == 'r':
+                pass
+            if accessType == 'w':
+                self.dirty = True
+        else:
+            raise ValueError("Accessing Invalid Cache Block")
 
 class cacheSet:
     def __init__(self, assoc:int, replacementPolicy:str):
-        self.blocks = []
         self.assoc = assoc
+        self.blocks = []
         for _ in range(assoc):
             self.blocks.extend([cacheBlock()])
         self.replacementPolicy = replacementPolicy
+        if self.replacementPolicy == "LRU":
+            self.LRUCounter = []
+            for _ in range(self.assoc):
+                self.LRUCounter.extend([-1])
         if (self.replacementPolicy == "PLRU"):
-            numStages = np.log2(assoc)
+            numStages = int(math.log(assoc,2))
             self.PLRUTree = Tree(numStages)
 
     def accessBlock(self, blockTag, accessType):
-        idx = 0
-        for block in self.blocks:
+        for idx, block in enumerate(self.blocks):
             idx += 1
             if block.tag == blockTag: # block in cache - return hit (True)
                 block.access(accessType)
                 if (self.replacementPolicy == "PLRU"):
                     self.PLRUTree.traverse(idx)
+                elif self.replacementPolicy == "LRU":
+                    self.LRUCounter = LRUupdate(self.LRUCounter, idx)
                 return True
         # if comes here, then block with given tag not in cache
         # bring to cache, and return miss (False)
-
+        newBlock = cacheBlock(blockTag)
+        self.insert(newBlock)
         return False
+
     def replace(self):
         if self.replacementPolicy == "RANDOM":
             replacementCandidate = random.randint(0,self.assoc-1)
         elif self.replacementPolicy == "LRU":
-            # insert LRU code here
-            replacementCandidate = random.randint(0,self.assoc-1)
+            replacementCandidate = LRUreplace(self.LRUCounter)
         elif self.replacementPolicy == "PLRU":
             replacementCandidate = self.PLRUTree.getVictim()
         else:
@@ -70,6 +75,8 @@ class cacheSet:
                 index = i
                 if (self.replacementPolicy == "PLRU"):
                     self.PLRUTree.traverse(i)
+                elif self.replacementPolicy == "LRU":
+                    self.LRUCounter = LRUupdate(self.LRUCounter, i)
                 break
         if index == -1: # no empty block - replace
             replacementCandidate = self.replace()
