@@ -11,7 +11,7 @@ def isNotPow2(val):
     else:
         return True
 
-def main(): 
+def main():
     confParser = inputParser("input/conf.txt")
     cacheSize, blockSize, assoc, assocType, replacementPolicy, traceFile = confParser.parse()
     # check if cSize, bSize and assoc are powers of 2:
@@ -42,9 +42,8 @@ def main():
     requests = tracer.parse()
 
     print("Running Simulation ...")
-    for i in tqdm(range(len(requests))):
-        request = requests[i]
-        address = request[0]
+    for request in tqdm(requests):
+        address = request[0]//blockSize
         accessType = request[1]
         cacheModule.memRequest(address, accessType)
     print()

@@ -1,5 +1,5 @@
 4096	 #Cache size
 64  	 #Cache line size
-1   	 #DM cache
-1   	 #LRU replacement
+4   	 # 4-way set associative cache
+2   	 #PLRU replacement
 traces/t1.txt
