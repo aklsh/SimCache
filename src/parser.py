@@ -2,7 +2,7 @@ class inputParser:
     def __init__(self, inputFile:str):
         self.inputFile = inputFile
     def parse(self):
-        replacementPolicies = ["RANDOM", "LRU", "P-LRU"]
+        replacementPolicies = ["RANDOM", "LRU", "PLRU"]
         with open(self.inputFile) as f:
             lines = f.read().splitlines()
         cacheSize = int(lines[0].split("\t")[0])
@@ -16,7 +16,26 @@ class inputParser:
                 associativityType = "FA"
         replacementPolicy = replacementPolicies[int(lines[3].split("\t")[0])]
         traceFile = lines[4].strip()
+        print("Cache size: {}".format(cacheSize))
+        print("Block size: {}".format(blockSize))
+        print("Associativity: {}".format(associativity))
+        print("  Type: {}".format(associativityType))
+        print("Replacement Policy: {}".format(replacementPolicy))
+        print("Trace File: {}".format(traceFile))
         return cacheSize, blockSize, associativity, associativityType, replacementPolicy, traceFile
+
+class traceParser:
+    def __init__(self, traceFile:str):
+        self.traceFile = traceFile
+    def parse(self):
+        with open(self.traceFile) as f:
+            lines = f.read().splitlines()
+        trace = []
+        for line in lines:
+            tempTrace = line.split(" ")
+            tempTrace[0] = int(tempTrace[0], 16)
+            trace.append(tempTrace)
+        return trace
 
 if __name__ == "__main__":
     parser = inputParser("test/input.txt")
@@ -27,3 +46,5 @@ if __name__ == "__main__":
     print("  Type: {}".format(at))
     print("Replacement Policy: {}".format(rp))
     print("Trace File: {}".format(tf))
+    tracer = traceParser(tf)
+    print(tracer.parse())

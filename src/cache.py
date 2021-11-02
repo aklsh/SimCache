@@ -42,7 +42,7 @@ class cacheSet:
 
     def emptyExists(self):
         for block in self.blocks:
-            if block.tag == None:
+            if block.valid == False:
                 return True
         return False
 
@@ -59,6 +59,8 @@ class cacheSet:
         # if comes here, then block with given tag not in cache
         # bring to cache, and return miss (False)
         newBlock = cacheBlock(blockTag)
+        if accessType == 'w':
+            newBlock.dirty = True
         status, replaceBlock = self.insert(newBlock)
         if status == 0:
             return False, None
@@ -77,19 +79,24 @@ class cacheSet:
         return replacementCandidate
 
     def insert(self, newBlock):
-        index = -1
-        replacedBlock = None
+        flag = -1
         for i, block in enumerate(self.blocks):
-            if block.tag == None: # empty block
-                index = i
+            if block.valid == False: # empty block
+                print("Inserting in empty block space")
+                self.blocks[i].valid = newBlock.valid
+                self.blocks[i].tag = newBlock.tag
+                self.blocks[i].dirty = newBlock.dirty
                 if (self.replacementPolicy == "PLRU"):
                     self.PLRUTree.traverse(i)
                 elif self.replacementPolicy == "LRU":
                     self.LRUCounter = LRUupdate(self.LRUCounter, i)
+                flag = 1
                 break
-        if index == -1: # no empty block - replace
+        if flag == -1: # no empty block - replace
             replacementCandidate = self.replace()
             replacedBlock = copy(self.blocks[replacementCandidate])
+            print("Replaced Block:")
+            replacedBlock.print()
             self.blocks[replacementCandidate].valid = True
             self.blocks[replacementCandidate].dirty = False
             self.blocks[replacementCandidate].tag = newBlock.tag
@@ -118,8 +125,6 @@ class cache:
             self.cacheSets.extend([cacheSet(self.assoc, self.replacementPolicy)])
 
     def memRequest(self, blockAddress, accessType):
-        if blockAddress not in self.history:
-            self.history.extend([blockAddress])
         self.numAccesses += 1
         if accessType == 'r':
             self.numReads += 1
@@ -127,8 +132,11 @@ class cache:
             self.numWrites += 1
         else:
             raise ValueError("Invalid Access Type")
+        print("Block Address", blockAddress)
         setIndex = blockAddress % self.numSets
         blockTag = blockAddress//self.numSets
+        print("Set Index", setIndex)
+        print("Block Tag", blockTag)
         reqStatus, retBlock = self.cacheSets[setIndex].accessBlock(blockTag, accessType)
         if reqStatus == True:
             self.numHits += 1
@@ -139,11 +147,12 @@ class cache:
             elif accessType == 'w':
                 self.numWriteMisses += 1
             if blockAddress not in self.history:
+                self.history.extend([blockAddress])
                 self.numCompMisses += 1
             else:
                 flag = 0
                 for set in self.cacheSets:
-                    if set.emptyExists == True:
+                    if set.emptyExists() == True:
                         self.numConfMisses += 1
                         flag = 1
                         break
@@ -152,3 +161,15 @@ class cache:
             if retBlock is not None:
                 if retBlock.dirty is True:
                     self.numDEs += 1
+    def printStats(self):
+        print("Number of Accesses", self.numAccesses)
+        print("Number of Reads", self.numReads)
+        print("Number of Writes", self.numWrites)
+        print("Number of Hits", self.numHits)
+        print("Number of Misses", self.numMisses)
+        print("Number of Read Misses", self.numReadMisses)
+        print("Number of Write Misses", self.numWriteMisses)
+        print("Number of Compulsory Misses", self.numCompMisses)
+        print("Number of Capacity Misses", self.numCapMisses)
+        print("Number of Conflict Misses", self.numConfMisses)
+        print("Number of Dirty Evictions", self.numDEs)
