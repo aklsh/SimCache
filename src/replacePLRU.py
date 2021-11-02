@@ -1,3 +1,11 @@
+'''
+SimCache: A Python-Based Uniprocessor Cache Simulator
+Authors: Akilesh K, Arjun Menon V
+Assignment 6, Computer Architecture
+Nov 2021
+Tree Based Pseudo LRU Policy Module
+'''
+
 # class definitions used for Pseudo LRU binary tree
 class Node():
     def __init__(self, value = 0):

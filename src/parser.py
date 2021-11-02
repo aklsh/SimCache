@@ -1,8 +1,16 @@
+'''
+SimCache: A Python-Based Uniprocessor Cache Simulator
+Authors: Akilesh K, Arjun Menon V
+Assignment 6, Computer Architecture
+Nov 2021
+Config Parser Module
+'''
+
 class inputParser:
     def __init__(self, inputFile:str):
         self.inputFile = inputFile
     def parse(self):
-        replacementPolicies = ["RANDOM", "LRU", "P-LRU"]
+        replacementPolicies = ["RANDOM", "LRU", "PLRU"]
         with open(self.inputFile) as f:
             lines = f.read().splitlines()
         cacheSize = int(lines[0].split("\t")[0])

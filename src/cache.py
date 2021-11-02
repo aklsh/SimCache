@@ -1,3 +1,11 @@
+'''
+SimCache: A Python-Based Uniprocessor Cache Simulator
+Authors: Akilesh K, Arjun Menon V
+Assignment 6, Computer Architecture
+Nov 2021
+Cache Class Module
+'''
+
 import random
 from replacePLRU import Tree
 from replaceLRU import LRUreplace, LRUupdate
@@ -42,7 +50,7 @@ class cacheSet:
 
     def emptyExists(self):
         for block in self.blocks:
-            if block.tag == None:
+            if block.valid == False:
                 return True
         return False
 
@@ -80,8 +88,11 @@ class cacheSet:
         index = -1
         replacedBlock = None
         for i, block in enumerate(self.blocks):
-            if block.tag == None: # empty block
+            if block.valid == False: # empty block
                 index = i
+                block.tag = newBlock.tag
+                block.valid = newBlock.valid
+                block.dirty = newBlock.dirty
                 if (self.replacementPolicy == "PLRU"):
                     self.PLRUTree.traverse(i)
                 elif self.replacementPolicy == "LRU":
@@ -118,8 +129,6 @@ class cache:
             self.cacheSets.extend([cacheSet(self.assoc, self.replacementPolicy)])
 
     def memRequest(self, blockAddress, accessType):
-        if blockAddress not in self.history:
-            self.history.extend([blockAddress])
         self.numAccesses += 1
         if accessType == 'r':
             self.numReads += 1
@@ -139,6 +148,7 @@ class cache:
             elif accessType == 'w':
                 self.numWriteMisses += 1
             if blockAddress not in self.history:
+                self.history.extend([blockAddress])
                 self.numCompMisses += 1
             else:
                 flag = 0

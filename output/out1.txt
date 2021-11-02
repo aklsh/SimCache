@@ -1,0 +1,26 @@
+------------- SimCache: A Python-Based Uniprocessor Cache Simulator -------------
+
+---------- Cache Configuration  ----------
+	Cache Size: 4096 
+	Block Size: 64             
+	Number of Sets: 16 
+	Associativity: 4 
+	Replacement Policy: PLRU            
+------------------------------------------
+
+Beginning Simulation ...
+
+----------- Simulation Results -----------
+	Num Accesses: 29
+	Num Reads: 13
+	Num Writes: 16
+	Num Hits: 4
+	Num Misses: 25
+	Num Compulsory Misses: 25
+	Num Capacity Misses: 0
+	Num Conflict Misses: 0
+	Num Read Misses: 12
+	Num Write Misses: 13
+	Num Dirty Evictions: 0
+------------------------------------------
+
