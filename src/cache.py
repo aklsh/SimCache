@@ -40,6 +40,12 @@ class cacheSet:
             numStages = int(math.log(assoc,2))
             self.PLRUTree = Tree(numStages)
 
+    def emptyExists(self):
+        for block in self.blocks:
+            if block.tag == None:
+                return True
+        return False
+
     def accessBlock(self, blockTag, accessType):
         for idx, block in enumerate(self.blocks):
             idx += 1
@@ -95,11 +101,54 @@ class cache:
         self.numSets = numSets
         self.assoc = assoc
         self.replacementPolicy = replacementPolicy
+        self.history = []
+        self.numAccesses = 0
+        self.numReads = 0
+        self.numWrites = 0
+        self.numHits = 0
+        self.numMisses = 0
+        self.numCompMisses = 0
+        self.numCapMisses = 0
+        self.numConfMisses = 0
+        self.numReadMisses = 0
+        self.numWriteMisses = 0
+        self.numDEs = 0
         self.cacheSets = []
         for _ in range(self.numSets):
             self.cacheSets.extend([cacheSet(self.assoc, self.replacementPolicy)])
 
     def memRequest(self, blockAddress, accessType):
+        if blockAddress not in self.history:
+            self.history.extend([blockAddress])
+        self.numAccesses += 1
+        if accessType == 'r':
+            self.numReads += 1
+        elif accessType == 'w':
+            self.numWrites += 1
+        else:
+            raise ValueError("Invalid Access Type")
         setIndex = blockAddress % self.numSets
         blockTag = blockAddress//self.numSets
-        self.cacheSets[setIndex].accessBlock(blockTag, accessType)
+        reqStatus, retBlock = self.cacheSets[setIndex].accessBlock(blockTag, accessType)
+        if reqStatus == True:
+            self.numHits += 1
+        else:
+            self.numMisses += 1
+            if accessType == 'r':
+                self.numReadMisses += 1
+            elif accessType == 'w':
+                self.numWriteMisses += 1
+            if blockAddress not in self.history:
+                self.numCompMisses += 1
+            else:
+                flag = 0
+                for set in self.cacheSets:
+                    if set.emptyExists == True:
+                        self.numConfMisses += 1
+                        flag = 1
+                        break
+                if flag == 0:
+                    self.numCapMisses += 1
+            if retBlock is not None:
+                if retBlock.dirty is True:
+                    self.numDEs += 1
