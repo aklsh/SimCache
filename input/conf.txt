@@ -1,0 +1,5 @@
+4096	 #Cache size
+64  	 #Cache line size
+1   	 #DM cache
+1   	 #LRU replacement
+traces/t1.txt

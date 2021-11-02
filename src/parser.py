@@ -16,12 +16,17 @@ class inputParser:
                 associativityType = "FA"
         replacementPolicy = replacementPolicies[int(lines[3].split("\t")[0])]
         traceFile = lines[4].strip()
+        print("---------- Cache Configuration  ----------")
         print("Cache size: {}".format(cacheSize))
         print("Block size: {}".format(blockSize))
         print("Associativity: {}".format(associativity))
         print("  Type: {}".format(associativityType))
+        if associativityType != "FA":
+            print("  Number of Sets: {}".format(int(cacheSize/(blockSize*associativity))))
         print("Replacement Policy: {}".format(replacementPolicy))
         print("Trace File: {}".format(traceFile))
+        print("------------------------------------------")
+        print()
         return cacheSize, blockSize, associativity, associativityType, replacementPolicy, traceFile
 
 class traceParser:
