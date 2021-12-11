@@ -14,6 +14,7 @@ class inputParser:
                 associativityType = "DM"
             else:
                 associativityType = "FA"
+                associativity = cacheSize//blockSize
         replacementPolicy = replacementPolicies[int(lines[3].split("\t")[0])]
         traceFile = lines[4].strip()
         print("---------- Cache Configuration  ----------")
